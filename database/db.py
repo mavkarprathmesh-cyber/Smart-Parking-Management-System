@@ -9,7 +9,11 @@ import os
 from typing import Dict, Any, List, Optional
 import json
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "parking_system.db")
+if os.environ.get("VERCEL"):
+    DB_PATH = "/tmp/parking_system.db"
+else:
+    DB_PATH = os.environ.get("DB_PATH", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "parking_system.db"))
+
 
 
 def get_db_connection():
