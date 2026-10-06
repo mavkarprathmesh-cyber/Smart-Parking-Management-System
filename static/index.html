@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Parking Management System | Academic DSA Mini-Project</title>
+  
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+<!-- ==========================================
+     AUTHENTICATION FULLSCREEN (FIRST SCREEN)
+     ========================================== -->
+<div id="auth-screen-overlay">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-brand-logo">
+        <i class="fas fa-parking"></i>
+      </div>
+      <div class="auth-title">SmartPark DSA</div>
+      <div class="auth-subtitle">Secure Academic Parking & Management System</div>
+    </div>
+
+    <!-- Auth Tabs -->
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-tab="login"><i class="fas fa-sign-in-alt"></i> Sign In</div>
+      <div class="auth-tab" data-tab="register"><i class="fas fa-user-plus"></i> Register</div>
+      <div class="auth-tab" data-tab="forgot"><i class="fas fa-key"></i> Help</div>
+    </div>
+
+    <div class="auth-body">
+      <!-- Demo Fast-Login Pills -->
+      <div class="demo-account-box">
+        <div style="font-weight:700; color:#38bdf8;"><i class="fas fa-bolt"></i> Fast Viva Demo Accounts</div>
+        <div class="demo-pills">
+          <button type="button" class="demo-pill" onclick="App.fillDemoCredentials('ADMIN')">
+            <i class="fas fa-shield-alt"></i> Admin Demo
+          </button>
+          <button type="button" class="demo-pill" onclick="App.fillDemoCredentials('USER')">
+            <i class="fas fa-user"></i> Customer Demo
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. LOGIN TAB -->
+      <div id="auth-tab-login">
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="login-email" class="form-control" placeholder="admin@smartpark.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; font-size:12px;">
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="login-remember" checked> Remember me
+            </label>
+            <a href="#" style="color:#38bdf8; text-decoration:none;" onclick="document.querySelector('.auth-tab[data-tab=\'forgot\']').click(); return false;">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:10px;">
+            <i class="fas fa-sign-in-alt"></i> Sign In to Portal
+          </button>
+        </form>
+      </div>
+
+      <!-- 2. REGISTER TAB -->
+      <div id="auth-tab-register" style="display:none;">
+        <form id="register-form">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="reg-name" class="form-control" placeholder="e.g. Priya Patel" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" id="reg-email" class="form-control" placeholder="priya@student.edu" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number</label>
+              <input type="text" id="reg-phone" class="form-control" placeholder="+91-9876543210">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" id="reg-password" class="form-control" placeholder="Min 8 chars, 1 upper, 1 special" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" id="reg-confirm-password" class="form-control" placeholder="Confirm password" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:10px; margin-top:8px;">
+            <i class="fas fa-user-plus"></i> Create Customer Account
+          </button>
+        </form>
+      </div>
+
+      <!-- 3. FORGOT / RESET PASSWORD TAB -->
+      <div id="auth-tab-forgot" style="display:none;">
+        <form id="forgot-password-form">
+          <div class="form-group">
+            <label class="form-label">Your Registered Email</label>
+            <input type="email" id="forgot-email" class="form-control" placeholder="e.g. priya@student.edu" required>
+          </div>
+          <button type="submit" class="btn btn-secondary" style="width:100%;">
+            <i class="fas fa-paper-plane"></i> Send Password Reset Code
+          </button>
+        </form>
+
+        <div id="reset-password-section" style="display:none; margin-top:20px; border-top:1px solid var(--border-color); padding-top:16px;">
+          <form id="reset-password-form">
+            <input type="hidden" id="reset-email-hidden">
+            <div class="form-group">
+              <label class="form-label">Reset Code</label>
+              <input type="text" id="reset-code-input" class="form-control" placeholder="6-digit reset code" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Strong Password</label>
+              <input type="password" id="reset-new-password" class="form-control" placeholder="New password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">
+              <i class="fas fa-check"></i> Set New Password
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     APPLICATION MAIN INTERFACE
+     ========================================== -->
+<div id="app-layout">
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="brand-section">
+      <div class="brand-logo">
+        <i class="fas fa-parking"></i>
+      </div>
+      <div>
+        <div class="brand-title">SmartPark DSA</div>
+        <div class="brand-subtitle">Academic Mini-Project</div>
+      </div>
+    </div>
+
+    <!-- Active User Profile snippet -->
+    <div class="sidebar-user-card" style="margin: 12px 12px 4px;">
+      <div class="sidebar-user-avatar" id="sidebar-user-avatar">U</div>
+      <div style="flex:1; overflow:hidden;">
+        <div id="sidebar-user-name" style="font-size:13px; font-weight:700; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">User</div>
+        <div id="sidebar-user-role" style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">USER</div>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <!-- USER PORTAL NAVIGATION -->
+      <li class="user-only-nav">
+        <a class="nav-link active" data-view="user-overview">
+          <i class="fas fa-home"></i>
+          <span>Overview</span>
+        </a>
+      </li>
+      <li class="user-only-nav">
+        <a class="nav-link" data-view="user-find-slots">
+          <i class="fas fa-search-location"></i>
+          <span>Find Parking</span>
+        </a>
+      </li>
+      <li class="user-only-nav">
+        <a class="nav-link" data-view="user-my-bookings">
+          <i class="fas fa-calendar-check"></i>
+          <span>My Bookings</span>
+        </a>
+      </li>
+      <li class="user-only-nav">
+        <a class="nav-link" data-view="user-my-vehicles">
+          <i class="fas fa-car"></i>
+          <span>My Vehicles</span>
+        </a>
+      </li>
+      <li class="user-only-nav">
+        <a class="nav-link" data-view="user-history">
+          <i class="fas fa-history"></i>
+          <span>Parking History</span>
+        </a>
+      </li>
+
+      <!-- ADMIN PORTAL NAVIGATION -->
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="dashboard">
+          <i class="fas fa-th-large"></i>
+          <span>Admin Dashboard</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="live-monitor">
+          <i class="fas fa-desktop"></i>
+          <span>Live Parking Monitor</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="slots">
+          <i class="fas fa-border-all"></i>
+          <span>Blocks & Slots</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="vehicles">
+          <i class="fas fa-car-side"></i>
+          <span>Vehicle Registry</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="admin-bookings">
+          <i class="fas fa-book-open"></i>
+          <span>All Bookings</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="entry-exit">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Entry & Exit</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="requests">
+          <i class="fas fa-stream"></i>
+          <span>Queues & Requests</span>
+          <span class="nav-badge" id="nav-queue-badge">0</span>
+        </a>
+      </li>
+
+      <!-- SHARED SECTIONS -->
+      <li>
+        <a class="nav-link" data-view="map">
+          <i class="fas fa-map-marked-alt"></i>
+          <span>2D Parking Map</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-link" data-view="navigation">
+          <i class="fas fa-route"></i>
+          <span>Navigation Graph</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="park">
+          <i class="fas fa-magic"></i>
+          <span>Instant Allocation</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="search">
+          <i class="fas fa-search"></i>
+          <span>Search Lab</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="algo-lab">
+          <i class="fas fa-flask"></i>
+          <span>Algorithm Lab</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="reports">
+          <i class="fas fa-chart-bar"></i>
+          <span>Reports & Analytics</span>
+        </a>
+      </li>
+      <li class="admin-only-nav">
+        <a class="nav-link" data-view="audit-logs">
+          <i class="fas fa-shield-alt"></i>
+          <span>Security Audit Logs</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-link" data-view="dsa-guide">
+          <i class="fas fa-graduation-cap"></i>
+          <span>DSA Viva Guide</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="admin-only-nav" style="display: flex; gap: 8px;">
+        <button id="undo-btn" class="btn btn-secondary btn-sm" style="flex: 1;" title="Undo recent action using Stack">
+          <i class="fas fa-undo"></i> Undo
+        </button>
+        <button id="patrol-zone-btn" class="btn btn-secondary btn-sm" style="flex: 1;" title="Inspect next zone using Circular Linked List">
+          <i class="fas fa-sync-alt"></i> Patrol
+        </button>
+      </div>
+      <button class="btn btn-danger btn-sm" style="width: 100%; margin-top: 4px;" onclick="App.handleLogout()">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="page-title" id="page-title">Smart Parking System</h1>
+        <div class="dsa-pill" id="header-dsa-pill">
+          <i class="fas fa-layer-group"></i> Array & Hash Table
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="header-role-badge" class="role-badge-user"><i class="fas fa-user"></i> Customer</span>
+        <button class="btn-icon" id="theme-toggle-btn" title="Toggle Dark/Light Mode">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT VIEWPORT -->
+    <main class="content-viewport">
+      
+      <!-- ==========================================
+           USER VIEW 1: USER OVERVIEW
+           ========================================== -->
+      <section id="view-user-overview" class="page-view">
+        <div class="kpi-grid">
+          <div class="kpi-card free">
+            <div class="kpi-icon"><i class="fas fa-calendar-check"></i></div>
+            <div>
+              <div class="kpi-value" id="user-stat-bookings">0</div>
+              <div class="kpi-label">Active Bookings</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fas fa-car"></i></div>
+            <div>
+              <div class="kpi-value" id="user-stat-vehicles">0</div>
+              <div class="kpi-label">My Registered Vehicles</div>
+            </div>
+          </div>
+          <div class="kpi-card reserved">
+            <div class="kpi-icon"><i class="fas fa-receipt"></i></div>
+            <div>
+              <div class="kpi-value" id="user-stat-total">0</div>
+              <div class="kpi-label">Total Reservations Made</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-bottom:24px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-calendar-alt"></i> My Current Advance Bookings</div>
+              <button class="btn btn-primary btn-sm" onclick="App.navigateTo('user-find-slots')">
+                <i class="fas fa-plus"></i> Book New Bay
+              </button>
+            </div>
+            <div id="user-active-bookings-list">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px;"><i class="fas fa-bolt"></i> Quick Actions</div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <button class="btn btn-secondary" onclick="App.navigateTo('user-find-slots')">
+                <i class="fas fa-search-location"></i> Find Available Slots
+              </button>
+              <button class="btn btn-secondary" onclick="App.navigateTo('map')">
+                <i class="fas fa-map-marked-alt"></i> View Campus 2D Floorplan
+              </button>
+              <button class="btn btn-secondary" onclick="UI.openModal('add-user-vehicle-modal')">
+                <i class="fas fa-plus-circle"></i> Add a New Vehicle
+              </button>
+              <button class="btn btn-secondary" onclick="App.navigateTo('dsa-guide')">
+                <i class="fas fa-graduation-cap"></i> View DSA Viva Guide
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           USER VIEW 2: FIND & BOOK PARKING
+           ========================================== -->
+      <section id="view-user-find-slots" class="page-view" style="display:none;">
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title" style="margin-bottom:14px;"><i class="fas fa-search-location"></i> Search Available Parking Bays</div>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:12px; align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Block / Zone</label>
+              <select id="find-slot-zone" class="form-control">
+                <option value="A">Zone A (4W Ground Floor)</option>
+                <option value="B">Zone B (4W First Floor)</option>
+                <option value="C">Zone C (2W Ground Floor)</option>
+                <option value="D">Zone D (Priority / Accessible)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Vehicle Type</label>
+              <select id="find-slot-vtype" class="form-control">
+                <option value="4W">4-Wheeler (Car / SUV)</option>
+                <option value="2W">2-Wheeler (Bike / Scooter)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Booking Date</label>
+              <input type="date" id="find-slot-date" class="form-control">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Arrival Time</label>
+              <input type="time" id="find-slot-time" class="form-control" value="10:00">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Duration (Hours)</label>
+              <input type="number" id="find-slot-duration" class="form-control" value="2" min="1" max="24">
+            </div>
+            <button class="btn btn-primary" style="height:42px;" onclick="App.executeFindSlots()">
+              <i class="fas fa-search"></i> Check Availability
+            </button>
+          </div>
+        </div>
+
+        <div id="find-slots-results-container">
+          <div class="card" style="text-align:center; padding:40px; color:var(--text-muted);">
+            <i class="fas fa-car" style="font-size:36px; margin-bottom:12px; color:#3b82f6;"></i>
+            <div style="font-size:15px; font-weight:600; color:var(--text-primary);">Search for Parking Bays</div>
+            <div style="font-size:12px; margin-top:4px;">Select your desired block, date and time above to find real-time available bays.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           USER VIEW 3: MY BOOKINGS
+           ========================================== -->
+      <section id="view-user-my-bookings" class="page-view" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-calendar-check"></i> My Advance Reservations</div>
+            <button class="btn btn-primary btn-sm" onclick="App.navigateTo('user-find-slots')">
+              <i class="fas fa-plus"></i> New Reservation
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Vehicle Number</th>
+                  <th>Slot ID</th>
+                  <th>Zone / Floor</th>
+                  <th>Booking Schedule</th>
+                  <th>Duration</th>
+                  <th>Est. Fee</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="user-bookings-table-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           USER VIEW 4: MY VEHICLES
+           ========================================== -->
+      <section id="view-user-my-vehicles" class="page-view" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-car"></i> My Registered Vehicles</div>
+            <button class="btn btn-primary btn-sm" onclick="UI.openModal('add-user-vehicle-modal')">
+              <i class="fas fa-plus"></i> Add Vehicle
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Vehicle ID</th>
+                  <th>License Plate</th>
+                  <th>Type</th>
+                  <th>Model & Color</th>
+                  <th>Current Parking Status</th>
+                </tr>
+              </thead>
+              <tbody id="user-vehicles-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           USER VIEW 5: USER PARKING HISTORY
+           ========================================== -->
+      <section id="view-user-history" class="page-view" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-history"></i> My Parking History</div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Vehicle Plate</th>
+                  <th>Slot ID</th>
+                  <th>Entry Time</th>
+                  <th>Exit Time</th>
+                  <th>Billed Amount</th>
+                </tr>
+              </thead>
+              <tbody id="user-history-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 1: ADMIN DASHBOARD
+           ========================================== -->
+      <section id="view-dashboard" class="page-view" style="display:none;">
+        <div class="kpi-grid">
+          <div class="kpi-card free">
+            <div class="kpi-icon"><i class="fas fa-check"></i></div>
+            <div>
+              <div class="kpi-value" id="kpi-free-slots">0</div>
+              <div class="kpi-label">Free Slots</div>
+            </div>
+          </div>
+          <div class="kpi-card occupied">
+            <div class="kpi-icon"><i class="fas fa-car"></i></div>
+            <div>
+              <div class="kpi-value" id="kpi-occupied-slots">0</div>
+              <div class="kpi-label">Occupied Slots</div>
+            </div>
+          </div>
+          <div class="kpi-card reserved">
+            <div class="kpi-icon"><i class="fas fa-crown"></i></div>
+            <div>
+              <div class="kpi-value" id="kpi-reserved-slots">0</div>
+              <div class="kpi-label">Reserved / VIP</div>
+            </div>
+          </div>
+          <div class="kpi-card queue">
+            <div class="kpi-icon"><i class="fas fa-users"></i></div>
+            <div>
+              <div class="kpi-value" id="kpi-queue-count">0</div>
+              <div class="kpi-label">Active Queue Requests</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fas fa-pie-chart"></i></div>
+            <div>
+              <div class="kpi-value" id="kpi-occupancy-pct">0%</div>
+              <div class="kpi-label">Occupancy Rate</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fas fa-warehouse"></i></div>
+            <div>
+              <div class="kpi-value" id="kpi-total-slots">0</div>
+              <div class="kpi-label">Total Facility Slots</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-bottom:24px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-layer-group"></i> Parking Blocks Overview (Click to Filter)</div>
+              <button class="btn btn-secondary btn-sm" onclick="App.navigateTo('slots')">Manage Slots</button>
+            </div>
+            <div id="dashboard-zone-cards" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="card" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <div class="card-title" style="margin-bottom:12px;"><i class="fas fa-chart-pie"></i> Live Occupancy Gauge</div>
+            <canvas id="occupancy-chart-canvas" width="220" height="220"></canvas>
+            <div style="display:flex; gap:12px; margin-top:14px; font-size:11.5px;">
+              <div><span style="color:#10b981;">●</span> Free</div>
+              <div><span style="color:#ef4444;">●</span> Occupied</div>
+              <div><span style="color:#f59e0b;">●</span> Reserved</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-history"></i> Recent Parking Activities (SLL)</div>
+            <button class="btn btn-secondary btn-sm" onclick="App.navigateTo('entry-exit')">View Full History</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Vehicle Number</th>
+                  <th>Slot ID</th>
+                  <th>Entry Time</th>
+                  <th>Exit Time</th>
+                  <th>Fee</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-history-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 2: LIVE PARKING MONITOR
+           ========================================== -->
+      <section id="view-live-monitor" class="page-view" style="display:none;">
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title" style="margin-bottom:14px;"><i class="fas fa-desktop"></i> Real-Time Vehicle & Slot Monitor</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Block / Zone</label>
+              <select id="monitor-zone-filter" class="form-control" onchange="App.loadLiveMonitor()">
+                <option value="ALL">All Blocks</option>
+                <option value="A">Block A</option>
+                <option value="B">Block B</option>
+                <option value="C">Block C</option>
+                <option value="D">Block D</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Floor</label>
+              <select id="monitor-floor-filter" class="form-control" onchange="App.loadLiveMonitor()">
+                <option value="ALL">All Floors</option>
+                <option value="Ground Floor">Ground Floor</option>
+                <option value="First Floor">First Floor</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Status</label>
+              <select id="monitor-status-filter" class="form-control" onchange="App.loadLiveMonitor()">
+                <option value="ALL">All Statuses</option>
+                <option value="FREE">Free</option>
+                <option value="OCCUPIED">Occupied</option>
+                <option value="RESERVED">Reserved</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Search Plate/Slot/Owner</label>
+              <input type="text" id="monitor-search-input" class="form-control" placeholder="Search..." oninput="App.loadLiveMonitor()">
+            </div>
+            <button class="btn btn-secondary" onclick="App.loadLiveMonitor()">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Slot ID</th>
+                  <th>Floor</th>
+                  <th>Status</th>
+                  <th>Parked Vehicle</th>
+                  <th>Owner</th>
+                  <th>Ticket / Booking ID</th>
+                  <th>Entry / Booking Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-live-monitor-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 3: ALL BOOKINGS
+           ========================================== -->
+      <section id="view-admin-bookings" class="page-view" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-book-open"></i> Customer Advance Reservations Management</div>
+            <div style="display:flex; gap:10px;">
+              <select id="admin-booking-status-filter" class="form-control" onchange="App.loadAdminBookings()" style="width:140px;">
+                <option value="ALL">All Statuses</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="ACTIVE">Active</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" onclick="App.loadAdminBookings()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Customer Name</th>
+                  <th>Vehicle</th>
+                  <th>Reserved Slot</th>
+                  <th>Date & Time</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-bookings-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 4: SECURITY AUDIT LOGS
+           ========================================== -->
+      <section id="view-audit-logs" class="page-view" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-shield-alt"></i> Security & Operation Audit Trail</div>
+            <button class="btn btn-secondary btn-sm" onclick="App.loadAuditLogs()"><i class="fas fa-sync-alt"></i> Refresh Logs</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>User ID</th>
+                  <th>Target</th>
+                  <th>Details</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="audit-logs-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SHARED VIEW 1: 2D PARKING MAP
+           ========================================== -->
+      <section id="view-map" class="page-view" style="display:none;">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><i class="fas fa-map-marked-alt"></i> Visual 2D Campus Floorplan</div>
+              <div class="card-subtitle">Real-time Dijkstra driving paths animate when routes are calculated.</div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn btn-secondary btn-sm" onclick="ParkingMap.clearRoute()">
+                <i class="fas fa-times"></i> Clear Path
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="App.loadMap()">
+                <i class="fas fa-sync-alt"></i> Refresh Map
+              </button>
+            </div>
+          </div>
+          <div id="parking-canvas-container">
+            <canvas id="parking-canvas"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 5: PARKING SLOTS
+           ========================================== -->
+      <section id="view-slots" class="page-view" style="display:none;">
+        <div class="card" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; gap:12px; align-items:center;">
+              <select id="slots-zone-filter" class="form-control" onchange="App.loadSlots()" style="width:160px;">
+                <option value="ALL">All Zones</option>
+                <option value="A">Zone A (4W Ground)</option>
+                <option value="B">Zone B (4W Floor 1)</option>
+                <option value="C">Zone C (2W Ground)</option>
+                <option value="D">Zone D (Priority)</option>
+              </select>
+              <select id="slots-status-filter" class="form-control" onchange="App.loadSlots()" style="width:140px;">
+                <option value="ALL">All Statuses</option>
+                <option value="FREE">Free</option>
+                <option value="OCCUPIED">Occupied</option>
+                <option value="RESERVED">Reserved</option>
+                <option value="BLOCKED">Blocked</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="UI.openModal('add-slot-modal')">
+              <i class="fas fa-plus"></i> Add New Slot
+            </button>
+          </div>
+        </div>
+
+        <div id="slots-grid-container" class="slots-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 6: VEHICLE REGISTRY
+           ========================================== -->
+      <section id="view-vehicles" class="page-view" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-car"></i> Global Vehicles Database</div>
+            <button class="btn btn-primary btn-sm" onclick="UI.openModal('register-vehicle-modal')">
+              <i class="fas fa-plus"></i> Register Vehicle
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Vehicle ID</th>
+                  <th>License Plate</th>
+                  <th>Type</th>
+                  <th>Owner Name</th>
+                  <th>Model / Color</th>
+                  <th>Current Slot</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="vehicles-table-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SHARED VIEW 2: INSTANT PARK ALLOCATION
+           ========================================== -->
+      <section id="view-park" class="page-view" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-magic"></i> Instant Parking Allocation</div>
+              <div class="card-subtitle">Min-Heap & Greedy Candidate Engine</div>
+            </div>
+            <form id="smart-park-form">
+              <div class="form-group">
+                <label class="form-label">Vehicle Registration Number</label>
+                <input type="text" id="park-vehicle-number" class="form-control" placeholder="e.g. KA-01-AB-1234" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Vehicle Type</label>
+                  <select id="park-vehicle-type" class="form-control">
+                    <option value="4W">4-Wheeler (Car / SUV)</option>
+                    <option value="2W">2-Wheeler (Bike / Scooter)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Priority Level</label>
+                  <select id="park-priority-level" class="form-control">
+                    <option value="NORMAL">Normal Request (FIFO Queue)</option>
+                    <option value="RESERVED">Reserved / VIP Priority</option>
+                    <option value="ACCESSIBILITY">Accessibility (Ground Floor Preference)</option>
+                    <option value="EMERGENCY">Emergency Priority (Ambulance / Police)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Arrival Gate</label>
+                <select id="park-entry-gate" class="form-control">
+                  <option value="GATE-1">Main Gate 1 (West Entrance)</option>
+                  <option value="GATE-2">East Gate 2 (Express Entrance)</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%;">
+                <i class="fas fa-bolt"></i> Execute Smart Allocation & Route
+              </button>
+            </form>
+          </div>
+
+          <div id="allocation-result-box">
+            <div class="card" style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--text-muted);">
+              <i class="fas fa-microchip" style="font-size:36px; margin-bottom:12px; color:#3b82f6;"></i>
+              <div style="font-size:15px; font-weight:600; color:var(--text-primary);">Allocation Engine Ready</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 7: REQUEST QUEUES
+           ========================================== -->
+      <section id="view-requests" class="page-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:700;">Live Request Queues</h2>
+            <div style="font-size:12px; color:var(--text-secondary);">Priority Queue is processed before FIFO Queue</div>
+          </div>
+          <button class="btn btn-primary" onclick="App.processNextQueueHead()">
+            <i class="fas fa-play"></i> Process Next Queued Vehicle
+          </button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+          <div class="card" style="border-top:4px solid #8b5cf6;">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-crown"></i> Priority Queue (Min-Heap)</div>
+              <span class="badge badge-accessibility">High Priority</span>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Req ID</th>
+                    <th>Vehicle Plate</th>
+                    <th>Priority Level</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="priority-queue-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="border-top:4px solid #3b82f6;">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-list-ol"></i> Normal Queue (FIFO)</div>
+              <span class="badge badge-free">Standard Queue</span>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Pos</th>
+                    <th>Req ID</th>
+                    <th>Vehicle Plate</th>
+                    <th>Type</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="normal-queue-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SHARED VIEW 3: ENTRY & EXIT
+           ========================================== -->
+      <section id="view-entry-exit" class="page-view" style="display:none;">
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-parking"></i> Active Parked Vehicles</div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Vehicle Number</th>
+                  <th>Slot ID</th>
+                  <th>Zone</th>
+                  <th>Entry Time</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="active-parked-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-history"></i> Completed Parking History (DLL)</div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Vehicle Number</th>
+                  <th>Slot</th>
+                  <th>Entry Time</th>
+                  <th>Exit Time</th>
+                  <th>Duration</th>
+                  <th>Total Fee</th>
+                </tr>
+              </thead>
+              <tbody id="all-history-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SHARED VIEW 4: NAVIGATION & GRAPH ROUTING
+           ========================================== -->
+      <section id="view-navigation" class="page-view" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:20px; margin-bottom:24px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fas fa-route"></i> Pathfinding Controls</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Start Gate / Node</label>
+              <select id="nav-start-select" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Destination Bay / Zone</label>
+              <select id="nav-end-select" class="form-control"></select>
+            </div>
+            <button class="btn btn-primary" style="width:100%; margin-bottom:12px;" onclick="App.runNavigationCompare()">
+              <i class="fas fa-play"></i> Compare Dijkstra vs BFS vs DFS
+            </button>
+            
+            <div class="admin-only-nav" style="margin-top:16px;">
+              <div class="card-title" style="font-size:13.5px; margin-bottom:8px;">
+                <i class="fas fa-road"></i> Toggle Blocked Lanes (Simulate Roadblocks)
+              </div>
+              <div id="lanes-toggle-list" style="max-height:200px; overflow-y:auto;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <div id="nav-compare-results">
+            <div class="card" style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--text-muted);">
+              <i class="fas fa-project-diagram" style="font-size:36px; margin-bottom:12px; color:#38bdf8;"></i>
+              <div style="font-size:15px; font-weight:600; color:var(--text-primary);">Graph Route Comparison Ready</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 8: SEARCH LAB
+           ========================================== -->
+      <section id="view-search" class="page-view" style="display:none;">
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title" style="margin-bottom:12px;"><i class="fas fa-search"></i> Multi-Data-Structure Search Comparison</div>
+          <div style="display:flex; gap:12px;">
+            <input type="text" id="multi-search-input" class="form-control" placeholder="Search by Plate (KA-01-MG-2024), Vehicle ID (V-101), Slot ID (A-01), or Name" onkeypress="if(event.key === 'Enter') App.executeMultiSearch()">
+            <button class="btn btn-primary" onclick="App.executeMultiSearch()" style="white-space:nowrap;">
+              <i class="fas fa-search"></i> Benchmark Search
+            </button>
+          </div>
+        </div>
+
+        <div id="search-benchmarks-container">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 9: ALGORITHM LAB
+           ========================================== -->
+      <section id="view-algo-lab" class="page-view" style="display:none;">
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-flask"></i> Interactive Algorithm Laboratory</div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="AlgoLab.generateNewDataset(30, 'RANDOM')">Random (30)</button>
+              <button class="btn btn-secondary btn-sm" onclick="AlgoLab.generateNewDataset(100, 'RANDOM')">Random (100)</button>
+              <button class="btn btn-secondary btn-sm" onclick="AlgoLab.generateNewDataset(50, 'REVERSED')">Reversed Worst-Case</button>
+              <button class="btn btn-secondary btn-sm" onclick="AlgoLab.generateNewDataset(50, 'NEARLY_SORTED')">Nearly Sorted</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Array Input (Comma-separated integers)</label>
+            <input type="text" id="lab-array-input" class="form-control" placeholder="12, 45, 23, 67, 89...">
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button class="btn btn-primary" onclick="AlgoLab.runSortingSuite()">
+              <i class="fas fa-sort-amount-down"></i> Run 7 Sorting Algorithms Benchmark
+            </button>
+            <div style="display:flex; gap:6px; align-items:center; margin-left:auto;">
+              <input type="number" id="search-target-input" class="form-control" style="width:100px;" value="42" placeholder="Target">
+              <button class="btn btn-secondary" onclick="AlgoLab.runSearchSuite()">
+                <i class="fas fa-search"></i> Compare Searches
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:24px;">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px;"><i class="fas fa-table"></i> Sorting Algorithms Performance Matrix</div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Algorithm</th>
+                    <th>Execution Time</th>
+                    <th>Comparisons</th>
+                    <th>Swaps / Moves</th>
+                    <th>Best (Ω)</th>
+                    <th>Average (Θ)</th>
+                    <th>Worst (O)</th>
+                  </tr>
+                </thead>
+                <tbody id="sort-results-tbody">
+                  <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px;">Click 'Run Sorting Benchmark' above to execute.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <div class="card-title" style="margin-bottom:12px;"><i class="fas fa-tachometer-alt"></i> Execution Speed (ms)</div>
+            <canvas id="sort-chart-canvas" width="260" height="200"></canvas>
+          </div>
+        </div>
+
+        <div id="search-lab-results"></div>
+      </section>
+
+      <!-- ==========================================
+           ADMIN VIEW 10: REPORTS
+           ========================================== -->
+      <section id="view-reports" class="page-view" style="display:none;">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fas fa-receipt"></i></div>
+            <div>
+              <div class="kpi-value" id="report-total-tickets">0</div>
+              <div class="kpi-label">Total Parking Tickets</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+            <div>
+              <div class="kpi-value" id="report-avg-duration">0m</div>
+              <div class="kpi-label">Avg Parking Duration</div>
+            </div>
+          </div>
+          <div class="kpi-card free">
+            <div class="kpi-icon"><i class="fas fa-rupee-sign"></i></div>
+            <div>
+              <div class="kpi-value" id="report-total-revenue">₹0</div>
+              <div class="kpi-label">Total Revenue</div>
+            </div>
+          </div>
+          <div class="kpi-card occupied">
+            <div class="kpi-icon"><i class="fas fa-check-double"></i></div>
+            <div>
+              <div class="kpi-value" id="report-completed-tickets">0</div>
+              <div class="kpi-label">Completed Sessions</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px;"><i class="fas fa-chart-line"></i> Hourly Traffic Influx</div>
+            <canvas id="hourly-traffic-chart" width="400" height="220"></canvas>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px;"><i class="fas fa-chart-pie"></i> Zone-Wise Capacity & Utilization</div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Zone Name</th>
+                    <th>Total Capacity</th>
+                    <th>Current Occupied</th>
+                    <th>Utilization</th>
+                  </tr>
+                </thead>
+                <tbody id="report-zone-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SHARED VIEW 5: DSA VIVA GUIDE
+           ========================================== -->
+      <section id="view-dsa-guide" class="page-view" style="display:none;">
+        <div class="card" style="margin-bottom:20px; border-left:4px solid #3b82f6;">
+          <h2 style="font-size:18px; font-weight:700;">Academic Data Structures & Algorithms Mapping Guide</h2>
+          <p style="font-size:13px; color:var(--text-secondary); margin-top:6px;">
+            Every single feature in this project is strictly implemented using core DSA concepts. Below is the complete academic reference mapping with exact time & space complexities.
+          </p>
+        </div>
+
+        <div id="dsa-guide-container">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ==========================================
+     MODALS
+     ========================================== -->
+
+<!-- Advance Slot Booking Modal (Customer) -->
+<div class="modal-backdrop" id="advance-booking-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-calendar-check"></i> Advance Booking for Slot <span id="bkg-modal-slot-id"></span></div>
+      <button class="btn-icon" onclick="UI.closeModal('advance-booking-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="advance-booking-form">
+      <input type="hidden" id="bkg-slot-id-hidden">
+      <input type="hidden" id="bkg-zone-id-hidden">
+      <input type="hidden" id="bkg-vtype-hidden">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Vehicle Registration Number</label>
+          <input type="text" id="bkg-vehicle-plate" class="form-control" placeholder="e.g. KA-03-EQ-4567" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Booking Date</label>
+            <input type="date" id="bkg-date-input" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expected Arrival Time</label>
+            <input type="time" id="bkg-time-input" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Duration (Hours)</label>
+            <input type="number" id="bkg-duration-input" class="form-control" value="2" min="1" max="24" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Arrival Gate</label>
+            <select id="bkg-gate-select" class="form-control">
+              <option value="GATE-1">Gate 1 (West Entrance)</option>
+              <option value="GATE-2">Gate 2 (East Entrance)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="UI.closeModal('advance-booking-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Confirm & Reserve Bay</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add User Vehicle Modal -->
+<div class="modal-backdrop" id="add-user-vehicle-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-car"></i> Add Vehicle to My Account</div>
+      <button class="btn-icon" onclick="UI.closeModal('add-user-vehicle-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="add-user-vehicle-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Vehicle License Number</label>
+          <input type="text" id="user-veh-plate" class="form-control" placeholder="e.g. MH-12-DE-5678" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vehicle Type</label>
+          <select id="user-veh-type" class="form-control">
+            <option value="4W">4-Wheeler (Car / SUV)</option>
+            <option value="2W">2-Wheeler (Bike / Scooter)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Model Name</label>
+            <input type="text" id="user-veh-model" class="form-control" placeholder="e.g. Honda City">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Color</label>
+            <input type="text" id="user-veh-color" class="form-control" placeholder="e.g. Black">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="UI.closeModal('add-user-vehicle-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Vehicle</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Slot Modal (Admin) -->
+<div class="modal-backdrop" id="add-slot-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-plus-circle"></i> Add New Parking Slot</div>
+      <button class="btn-icon" onclick="UI.closeModal('add-slot-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="add-slot-form">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Slot ID (e.g. A-09)</label>
+            <input type="text" id="slot-id-input" class="form-control" required placeholder="A-09">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Zone</label>
+            <select id="slot-zone-input" class="form-control">
+              <option value="A">Zone A (Ground 4W)</option>
+              <option value="B">Zone B (Floor 1 4W)</option>
+              <option value="C">Zone C (Ground 2W)</option>
+              <option value="D">Zone D (Priority)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vehicle Type</label>
+            <select id="slot-vtype-input" class="form-control">
+              <option value="4W">4-Wheeler</option>
+              <option value="2W">2-Wheeler</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority Type</label>
+            <select id="slot-priority-input" class="form-control">
+              <option value="NORMAL">Normal</option>
+              <option value="ACCESSIBILITY">Accessibility</option>
+              <option value="RESERVED">Reserved</option>
+              <option value="EMERGENCY">Emergency</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Distance from Gate (meters)</label>
+          <input type="number" id="slot-dist-input" class="form-control" value="35.0" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="UI.closeModal('add-slot-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Slot</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Slot Status Modal -->
+<div class="modal-backdrop" id="edit-slot-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-edit"></i> Edit Slot <span id="edit-slot-id-label"></span></div>
+      <button class="btn-icon" onclick="UI.closeModal('edit-slot-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="edit-slot-form">
+      <input type="hidden" id="edit-slot-id-hidden">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Change Status</label>
+          <select id="edit-slot-status-select" class="form-control">
+            <option value="FREE">FREE</option>
+            <option value="OCCUPIED">OCCUPIED</option>
+            <option value="RESERVED">RESERVED</option>
+            <option value="BLOCKED">BLOCKED</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="UI.closeModal('edit-slot-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Status</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Register Vehicle Modal (Admin) -->
+<div class="modal-backdrop" id="register-vehicle-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-car"></i> Register New Vehicle (Admin)</div>
+      <button class="btn-icon" onclick="UI.closeModal('register-vehicle-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="register-vehicle-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Vehicle Registration Number</label>
+          <input type="text" id="reg-plate-input" class="form-control" placeholder="e.g. DL-04-CA-5678" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vehicle Type</label>
+            <select id="reg-vtype-input" class="form-control">
+              <option value="4W">4-Wheeler</option>
+              <option value="2W">2-Wheeler</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Owner Full Name</label>
+            <input type="text" id="reg-owner-input" class="form-control" placeholder="e.g. Rahul Sharma" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Model Name</label>
+            <input type="text" id="reg-model-input" class="form-control" placeholder="e.g. Honda City">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Color</label>
+            <input type="text" id="reg-color-input" class="form-control" placeholder="e.g. White">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="UI.closeModal('register-vehicle-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Register Vehicle</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirmation Dialog Modal -->
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title" id="confirm-modal-title">Confirm Action</div>
+      <button class="btn-icon" onclick="UI.closeModal('confirm-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-modal-msg" style="font-size:13.5px; color:var(--text-secondary);"></p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="UI.closeModal('confirm-modal')">Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirm-modal-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifications -->
+<div id="toast-container"></div>
+
+<!-- JavaScript Module Scripts -->
+<script src="/static/js/api.js"></script>
+<script src="/static/js/components.js"></script>
+<script src="/static/js/parking_map.js"></script>
+<script src="/static/js/algo_lab.js"></script>
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>
