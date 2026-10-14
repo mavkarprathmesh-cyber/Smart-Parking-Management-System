@@ -21,6 +21,7 @@ from services.graph_service import graph_service
 from services.lab_service import lab_service
 from services.auth_service import auth_service
 from services.booking_service import booking_service
+from services.road_routing_service import road_routing_service
 from services.security import verify_session_token, record_audit_log
 from dsa.complexity import get_all_dsa_explanations
 
@@ -499,6 +500,23 @@ def search_system(q: str = Query(..., min_length=1)):
 
 
 # 9. Navigation & Graph Routing
+@app.get("/api/config/map")
+def get_map_config():
+    """Provides configuration for the 3D interactive map, reading environment variables securely."""
+    mapbox_token = os.environ.get("MAPBOX_ACCESS_TOKEN", "").strip()
+    return {
+        "mapbox_token": mapbox_token,
+        "has_mapbox": bool(mapbox_token),
+        "campus_center": {
+            "lng": float(os.environ.get("CAMPUS_LNG", 77.5945)),
+            "lat": float(os.environ.get("CAMPUS_LAT", 12.9716))
+        },
+        "default_pitch": 55,
+        "default_bearing": -15,
+        "default_zoom": 17.5
+    }
+
+
 @app.get("/api/navigation/graph")
 def get_navigation_graph():
     return graph_service.get_all_graph_elements()
@@ -511,6 +529,27 @@ def get_navigation_route(
     algorithm: str = Query("DIJKSTRA")
 ):
     res = graph_service.get_shortest_route(start, destination, algorithm)
+    if not res.get("success"):
+        raise HTTPException(status_code=400, detail=res.get("error"))
+    return res
+
+
+@app.get("/api/navigation/geocode")
+def geocode_address(q: str = Query(..., min_length=2)):
+    """Resolves Indian and global addresses/landmarks to real geographic coordinates."""
+    return road_routing_service.geocode(q)
+
+
+@app.get("/api/navigation/road-route")
+def get_live_road_route(
+    start_lng: float = Query(...),
+    start_lat: float = Query(...),
+    dest_lng: float = Query(...),
+    dest_lat: float = Query(...),
+    alternatives: bool = Query(True)
+):
+    """Calculates actual road-based driving routes, returning the fastest and shortest paths with turn geometry."""
+    res = road_routing_service.calculate_road_routes(start_lng, start_lat, dest_lng, dest_lat, alternatives)
     if not res.get("success"):
         raise HTTPException(status_code=400, detail=res.get("error"))
     return res

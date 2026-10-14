@@ -264,8 +264,22 @@ const API = {
     return this.request(`/api/search?q=${encodeURIComponent(query)}`);
   },
 
+  getMapConfig() {
+    return this.request('/api/config/map');
+  },
+
   getGraph() {
     return this.request('/api/navigation/graph');
+  },
+
+  geocode(query) {
+    return this.request(`/api/navigation/geocode?q=${encodeURIComponent(query)}`);
+  },
+
+  getRoadRoute(startLng, startLat, destLng, destLat, alternatives = true) {
+    return this.request(
+      `/api/navigation/road-route?start_lng=${startLng}&start_lat=${startLat}&dest_lng=${destLng}&dest_lat=${destLat}&alternatives=${alternatives}`
+    );
   },
 
   getRoute(start, destination, algorithm = 'DIJKSTRA') {

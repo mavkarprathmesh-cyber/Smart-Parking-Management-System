@@ -13,6 +13,10 @@
   <!-- FontAwesome 6 Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
+  <!-- MapLibre GL JS for Interactive 3D WebGL Mapping -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
@@ -248,8 +252,8 @@
       <!-- SHARED SECTIONS -->
       <li>
         <a class="nav-link" data-view="map">
-          <i class="fas fa-map-marked-alt"></i>
-          <span>2D Parking Map</span>
+          <i class="fas fa-cube"></i>
+          <span>Interactive 3D Map</span>
         </a>
       </li>
       <li>
@@ -766,26 +770,151 @@
       </section>
 
       <!-- ==========================================
-           SHARED VIEW 1: 2D PARKING MAP
+           SHARED VIEW 1: INTERACTIVE 3D PARKING MAP
            ========================================== -->
       <section id="view-map" class="page-view" style="display:none;">
         <div class="card" style="margin-bottom:16px;">
-          <div class="card-header">
+          <!-- Header with View Mode Switcher -->
+          <div class="card-header" style="flex-wrap:wrap; gap:12px; margin-bottom:16px;">
             <div>
-              <div class="card-title"><i class="fas fa-map-marked-alt"></i> Visual 2D Campus Floorplan</div>
-              <div class="card-subtitle">Real-time Dijkstra driving paths animate when routes are calculated.</div>
+              <div class="card-title" style="display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-cube" style="color:var(--accent-primary);"></i> Interactive 3D Parking Map & Navigation
+              </div>
+              <div class="card-subtitle">
+                Select and lock your Starting Location and Destination. Real-time Dijkstra driving paths compute dynamically in 3D.
+              </div>
             </div>
-            <div style="display:flex; gap:10px;">
-              <button class="btn btn-secondary btn-sm" onclick="ParkingMap.clearRoute()">
-                <i class="fas fa-times"></i> Clear Path
-              </button>
-              <button class="btn btn-secondary btn-sm" onclick="App.loadMap()">
-                <i class="fas fa-sync-alt"></i> Refresh Map
+            
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div class="btn-group map-mode-btn-group">
+                <button type="button" id="btn-mode-3d" class="btn btn-sm btn-primary active" onclick="Map3D.switchViewMode('3d')">
+                  <i class="fas fa-cube"></i> Interactive 3D Map
+                </button>
+                <button type="button" id="btn-mode-2d" class="btn btn-sm btn-secondary" onclick="Map3D.switchViewMode('2d')">
+                  <i class="fas fa-map"></i> 2D Blueprint
+                </button>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="App.loadMap()" title="Refresh map data">
+                <i class="fas fa-sync-alt"></i> Refresh
               </button>
             </div>
           </div>
-          <div id="parking-canvas-container">
-            <canvas id="parking-canvas"></canvas>
+
+          <!-- 3D MAP WRAPPER -->
+          <div id="map-3d-view-wrapper">
+            <!-- 3D Map Control Bar: From & To Selection with Lock / Unlock -->
+            <div class="map3d-controls-panel">
+              <div class="map3d-inputs-grid">
+                <!-- 1. STARTING LOCATION -->
+                <div class="form-group" id="map3d-start-input-group" style="margin:0; position:relative;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label class="form-label" style="margin:0; display:flex; align-items:center; gap:6px;">
+                      <i class="fas fa-play-circle" style="color:#10b981;"></i> Starting Location (From)
+                    </label>
+                    <span id="start-lock-status" class="badge badge-unlocked"><i class="fas fa-lock-open"></i> Unlocked</span>
+                  </div>
+                  <div style="display:flex; gap:6px;">
+                    <div style="position:relative; flex:1;">
+                      <input type="text" id="map3d-start-input" class="form-control" placeholder="Search gate, zone, slot or click map..." autocomplete="off">
+                      <button type="button" class="btn-input-clear" onclick="Map3D.clearStartLocation()" title="Clear starting location">&times;</button>
+                    </div>
+                    <button type="button" id="map3d-gps-btn" class="btn btn-secondary" onclick="Map3D.useCurrentLocation()" title="Use My Current Location (GPS)">
+                      <i class="fas fa-crosshairs"></i>
+                    </button>
+                    <button type="button" id="map3d-lock-start-btn" class="btn btn-outline-success" onclick="Map3D.toggleLockStart()" title="Lock/Unlock Starting Location">
+                      <i class="fas fa-lock"></i> Lock
+                    </button>
+                  </div>
+                  <!-- Dropdown Suggestions for Start -->
+                  <div id="map3d-start-suggestions" class="map3d-suggestions-dropdown" style="display:none;"></div>
+                </div>
+
+                <!-- 2. DESTINATION -->
+                <div class="form-group" id="map3d-dest-input-group" style="margin:0; position:relative;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label class="form-label" style="margin:0; display:flex; align-items:center; gap:6px;">
+                      <i class="fas fa-flag-checkered" style="color:#ef4444;"></i> Destination (To)
+                    </label>
+                    <span id="dest-lock-status" class="badge badge-unlocked"><i class="fas fa-lock-open"></i> Unlocked</span>
+                  </div>
+                  <div style="display:flex; gap:6px;">
+                    <div style="position:relative; flex:1;">
+                      <input type="text" id="map3d-dest-input" class="form-control" placeholder="Search bay (e.g. A-01), zone, or gate..." autocomplete="off">
+                      <button type="button" class="btn-input-clear" onclick="Map3D.clearDestLocation()" title="Clear destination">&times;</button>
+                    </div>
+                    <button type="button" id="map3d-lock-dest-btn" class="btn btn-outline-danger" onclick="Map3D.toggleLockDest()" title="Lock/Unlock Destination">
+                      <i class="fas fa-lock"></i> Lock
+                    </button>
+                  </div>
+                  <!-- Dropdown Suggestions for Destination -->
+                  <div id="map3d-dest-suggestions" class="map3d-suggestions-dropdown" style="display:none;"></div>
+                </div>
+              </div>
+
+              <!-- Quick Chips & Action Buttons Row -->
+              <div class="map3d-actions-row">
+                <div class="map3d-quick-chips">
+                  <span style="font-size:12px; font-weight:600; color:var(--text-muted); align-self:center;">Quick Select:</span>
+                  <button type="button" class="chip-btn" onclick="Map3D.selectQuickChip('GATE', 'GATE-1')"><i class="fas fa-door-open"></i> Main Gate 1</button>
+                  <button type="button" class="chip-btn" onclick="Map3D.selectQuickChip('GATE', 'GATE-2')"><i class="fas fa-door-open"></i> East Gate 2</button>
+                  <button type="button" class="chip-btn" onclick="Map3D.selectQuickChip('ZONE', 'ZONE-A')"><i class="fas fa-car"></i> Zone A (4W)</button>
+                  <button type="button" class="chip-btn" onclick="Map3D.selectQuickChip('ZONE', 'ZONE-B')"><i class="fas fa-layer-group"></i> Zone B (Floor 1)</button>
+                  <button type="button" class="chip-btn" onclick="Map3D.selectQuickChip('ZONE', 'ZONE-C')"><i class="fas fa-motorcycle"></i> Zone C (2W)</button>
+                  <button type="button" class="chip-btn" onclick="Map3D.selectQuickChip('ZONE', 'ZONE-D')"><i class="fas fa-ambulance"></i> Zone D (Priority)</button>
+                </div>
+
+                <div class="map3d-btn-group">
+                  <button type="button" id="map3d-confirm-btn" class="btn btn-primary" onclick="Map3D.confirmRoute()" disabled>
+                    <i class="fas fa-check-circle"></i> Confirm Route
+                  </button>
+                  <button type="button" id="map3d-reset-btn" class="btn btn-secondary" onclick="Map3D.resetRoute()">
+                    <i class="fas fa-undo"></i> Reset Route
+                  </button>
+                </div>
+              </div>
+
+              <!-- Route Stats and Turn Directions Panel (shown on route calculation) -->
+              <div id="map3d-route-card" style="display:none;"></div>
+            </div>
+
+            <!-- 3D Canvas Container -->
+            <div class="map3d-container-wrapper">
+              <div id="map3d-canvas-container" class="map3d-canvas-container"></div>
+              
+              <!-- Floating 3D Camera Controls -->
+              <div class="map3d-camera-floating-toolbar">
+                <button type="button" class="camera-btn" onclick="Map3D.setCameraPreset('3d')" title="3D Perspective View (Pitch 60°)">
+                  <i class="fas fa-cube"></i> 3D View
+                </button>
+                <button type="button" class="camera-btn" onclick="Map3D.setCameraPreset('top')" title="Top-Down 2D View">
+                  <i class="fas fa-square"></i> Top-Down
+                </button>
+                <button type="button" class="camera-btn" onclick="Map3D.setCameraPreset('north')" title="Reset North Compass">
+                  <i class="fas fa-compass"></i> North
+                </button>
+                <button type="button" class="camera-btn" onclick="Map3D.setCameraPreset('reset')" title="Center Campus">
+                  <i class="fas fa-bullseye"></i> Center
+                </button>
+              </div>
+
+              <!-- 3D Map Legend -->
+              <div class="map3d-legend-floating">
+                <div style="font-weight:700; font-size:11px; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Campus Legend</div>
+                <div class="legend-row"><span class="legend-dot" style="background:#10b981;"></span> Zone A (4W Ground)</div>
+                <div class="legend-row"><span class="legend-dot" style="background:#0284c7;"></span> Zone B (4W 1st Floor)</div>
+                <div class="legend-row"><span class="legend-dot" style="background:#9333ea;"></span> Zone C (2W Bays)</div>
+                <div class="legend-row"><span class="legend-dot" style="background:#f59e0b;"></span> Zone D (Priority)</div>
+                <div class="legend-row"><span class="legend-dot" style="background:#10b981; border:1px solid #059669;"></span> Bay Available</div>
+                <div class="legend-row"><span class="legend-dot" style="background:#ef4444;"></span> Bay Occupied</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2D BLUEPRINT WRAPPER (FALLBACK / ALTERNATIVE) -->
+          <div id="map-2d-view-wrapper" style="display:none;">
+            <div id="parking-canvas-container">
+              <canvas id="parking-canvas"></canvas>
+            </div>
           </div>
         </div>
       </section>
@@ -1043,8 +1172,11 @@
               <label class="form-label">Destination Bay / Zone</label>
               <select id="nav-end-select" class="form-control"></select>
             </div>
-            <button class="btn btn-primary" style="width:100%; margin-bottom:12px;" onclick="App.runNavigationCompare()">
+            <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="App.runNavigationCompare()">
               <i class="fas fa-play"></i> Compare Dijkstra vs BFS vs DFS
+            </button>
+            <button class="btn btn-secondary" style="width:100%; margin-bottom:12px;" onclick="Map3D.setPredefinedRoute(document.getElementById('nav-start-select').value, document.getElementById('nav-end-select').value); App.navigateTo('map');">
+              <i class="fas fa-cube"></i> View Route on Interactive 3D Map
             </button>
             
             <div class="admin-only-nav" style="margin-top:16px;">
@@ -1473,6 +1605,7 @@
 <script src="/static/js/api.js"></script>
 <script src="/static/js/components.js"></script>
 <script src="/static/js/parking_map.js"></script>
+<script src="/static/js/map_3d.js"></script>
 <script src="/static/js/algo_lab.js"></script>
 <script src="/static/js/app.js"></script>
 

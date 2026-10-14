@@ -29,6 +29,26 @@ wheels/
 *.sqlite3
 *.db-journal
 
+# Secrets & Environment Variables
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.cert
+*.crt
+
+# Node & Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing & Caches
+.pytest_cache/
+.coverage
+htmlcov/
+
 # IDE & OS
 .vscode/
 .idea/
@@ -37,3 +57,4 @@ wheels/
 .DS_Store
 Thumbs.db
 *.log
+

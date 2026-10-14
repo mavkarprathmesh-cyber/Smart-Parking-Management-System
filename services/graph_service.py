@@ -49,6 +49,32 @@ class GraphService:
                 lane_name=e["lane_name"] or f"{e['u']}->{e['v']}"
             )
 
+        # Ensure all registered parking slots in database are present in navigation graph
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT slot_id, zone_id, pos_x, pos_y FROM parking_slots")
+        slots = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+
+        for s in slots:
+            sid = s["slot_id"]
+            if sid not in self.graph.nodes:
+                self.graph.add_node(sid, f"Bay {sid}", "SLOT", float(s["pos_x"]), float(s["pos_y"]))
+                zone_node = f"ZONE-{s['zone_id']}"
+                if zone_node in self.graph.nodes:
+                    zone_obj = self.graph.nodes[zone_node]
+                    dx = float(s["pos_x"]) - zone_obj.x
+                    dy = float(s["pos_y"]) - zone_obj.y
+                    dist = max(3.0, round(((dx**2 + dy**2)**0.5) / 10.0, 1))
+                    self.graph.add_edge(
+                        u=zone_node,
+                        v=sid,
+                        weight=dist,
+                        bidirectional=True,
+                        is_blocked=False,
+                        lane_name=f"Zone {s['zone_id']} Aisle to {sid}"
+                    )
+
     def get_shortest_route(self, start_node: str, end_node: str, algorithm: str = "DIJKSTRA") -> Dict[str, Any]:
         """
         Calculates path between nodes using selected algorithm: DIJKSTRA, BFS, or DFS.

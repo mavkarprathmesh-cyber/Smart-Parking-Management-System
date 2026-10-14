@@ -66,8 +66,11 @@ const App = {
       this.navigateTo('user-overview');
     }
 
-    // Initialize Canvas Map
+    // Initialize Canvas Map & 3D Interactive Map
     ParkingMap.init('parking-canvas', (slot) => this.handleMapSlotClick(slot));
+    if (window.Map3D) {
+      Map3D.init();
+    }
     AlgoLab.init();
   },
 
@@ -357,7 +360,7 @@ const App = {
       'park': 'Smart Slot Allocation Engine',
       'requests': 'Request Queues (FIFO & Min-Heap)',
       'entry-exit': 'Active Parked Vehicles & Checkouts',
-      'map': 'Interactive 2D Campus Floorplan',
+      'map': 'Interactive 3D Campus Map & Navigation',
       'navigation': 'Campus Navigation & Routing Graph',
       'search': 'Multi-Structure Search Lab',
       'algo-lab': 'Data Structures & Algorithm Benchmark Lab',
@@ -372,7 +375,7 @@ const App = {
       'user-my-bookings': '<i class="fas fa-receipt"></i> Singly Linked List',
       'dashboard': '<i class="fas fa-chart-pie"></i> Array & Hash Table',
       'live-monitor': '<i class="fas fa-desktop"></i> Hash Table & SLL',
-      'map': '<i class="fas fa-map-marked-alt"></i> 2D Array & Graph Overlay',
+      'map': '<i class="fas fa-cube"></i> Dijkstra 3D Routing & Min-Heap',
       'slots': '<i class="fas fa-th-large"></i> Contiguous Array & BST',
       'vehicles': '<i class="fas fa-car"></i> Hash Table & SLL',
       'park': '<i class="fas fa-microchip"></i> Min-Heap & Greedy Choice',
@@ -598,6 +601,9 @@ const App = {
   async viewBookingRoute(slotId) {
     App.navigateTo('map');
     try {
+      if (window.Map3D) {
+        Map3D.setPredefinedRoute('GATE-1', slotId);
+      }
       const route = await API.getRoute('GATE-1', slotId, 'DIJKSTRA');
       ParkingMap.setRoute(route);
       UI.showToast('Route Loaded', `Shortest Dijkstra route to your reserved Bay ${slotId} (${route.total_distance_meters}m)`, 'info');
@@ -884,6 +890,16 @@ const App = {
         API.getGraph()
       ]);
       ParkingMap.setData(slots, graph);
+      if (window.Map3D) {
+        if (!Map3D.isInitialized) {
+          Map3D.init();
+        } else if (Map3D.map) {
+          Map3D.slots = slots;
+          Map3D.graphData = graph;
+          Map3D.addParkingSlotsLayer();
+          Map3D.map.resize();
+        }
+      }
     } catch (err) {
       UI.showToast('Error', 'Failed to load map data', 'error');
     }
@@ -1071,6 +1087,9 @@ const App = {
   async viewAllocationOnMap(slotId, gate) {
     App.navigateTo('map');
     try {
+      if (window.Map3D) {
+        Map3D.setPredefinedRoute(gate, slotId);
+      }
       const route = await API.getRoute(gate, slotId, 'DIJKSTRA');
       ParkingMap.setRoute(route);
       UI.showToast('Navigation Loaded', `Shortest route from ${gate} to ${slotId} (${route.total_distance_meters}m)`, 'info');
