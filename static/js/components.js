@@ -42,9 +42,31 @@ const UI = {
   // ==========================================
   // 2. MODAL MANAGER
   // ==========================================
+  toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (backdrop) backdrop.classList.toggle('active');
+  },
+
+  closeMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
+  },
+
   openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
+      if (modalId === 'server-config-modal') {
+        const inp = document.getElementById('server-url-input');
+        if (inp && window.API && typeof window.API.getBaseUrl === 'function') {
+          inp.value = window.API.getBaseUrl();
+        }
+        const res = document.getElementById('server-ping-result');
+        if (res) res.style.display = 'none';
+      }
       modal.classList.add('active');
     }
   },

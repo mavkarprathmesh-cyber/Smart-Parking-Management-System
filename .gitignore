@@ -57,4 +57,13 @@ htmlcov/
 .DS_Store
 Thumbs.db
 *.log
-
+# Android Builds & Keystores
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/captures/
+*.apk
+*.aab
+*.jks
+*.keystore

@@ -261,6 +261,9 @@ const App = {
     }
 
     this.currentView = viewName;
+    if (window.UI && typeof window.UI.closeMobileMenu === 'function') {
+      window.UI.closeMobileMenu();
+    }
 
     // Update active nav link
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -1600,9 +1603,87 @@ const App = {
         });
       });
     }
+  },
+
+  // ==========================================
+  // MOBILE APP & SERVER CONFIGURATION
+  // ==========================================
+  setServerPreset(preset) {
+    const inp = document.getElementById('server-url-input');
+    if (!inp) return;
+    if (preset === 'emulator') {
+      inp.value = 'http://10.0.2.2:8000';
+    } else if (preset === 'localhost') {
+      inp.value = 'http://localhost:8000';
+    } else if (preset === 'sameorigin') {
+      inp.value = '';
+    }
+  },
+
+  async testServerConnection() {
+    const inp = document.getElementById('server-url-input');
+    const resBox = document.getElementById('server-ping-result');
+    const target = inp ? inp.value.trim() : '';
+    if (resBox) {
+      resBox.style.display = 'block';
+      resBox.style.background = '#eff6ff';
+      resBox.style.color = '#1d4ed8';
+      resBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting to ' + (target || 'same origin') + '...';
+    }
+    const res = await API.pingServer(target);
+    if (resBox) {
+      if (res.success) {
+        resBox.style.background = '#ecfdf5';
+        resBox.style.color = '#065f46';
+        resBox.innerHTML = '<i class="fas fa-check-circle"></i> ' + res.message;
+      } else {
+        resBox.style.background = '#fef2f2';
+        resBox.style.color = '#991b1b';
+        resBox.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + res.message;
+      }
+    }
+  },
+
+  saveServerConfig() {
+    const inp = document.getElementById('server-url-input');
+    const url = inp ? inp.value.trim() : '';
+    API.setBaseUrl(url);
+    UI.closeModal('server-config-modal');
+    UI.showToast('Server Updated', `Backend API URL saved: ${url || 'Same origin (default)'}`, 'success');
+    if (App.currentRole === 'ADMIN') {
+      App.loadDashboard();
+    } else if (App.currentRole === 'USER') {
+      App.loadUserOverview();
+    }
+  },
+
+  setupNativeMobileFeatures() {
+    // Android Back Button handler via Capacitor
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+      window.Capacitor.Plugins.App.addListener('backButton', ({ canGoBack }) => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+          UI.closeMobileMenu();
+          return;
+        }
+        const activeModals = document.querySelectorAll('.modal-backdrop.active');
+        if (activeModals.length > 0) {
+          activeModals[activeModals.length - 1].classList.remove('active');
+          return;
+        }
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.Capacitor.Plugins.App.exitApp();
+        }
+      });
+    }
   }
 };
 
 // Global startup
 window.App = App;
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+  App.setupNativeMobileFeatures();
+});

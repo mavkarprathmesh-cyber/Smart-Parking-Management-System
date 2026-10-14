@@ -1,0 +1,29 @@
+{
+  "name": "dsa-project",
+  "version": "1.0.0",
+  "description": "An academic mini-project featuring a full-stack **Smart Parking Management System** with **Secure Role-Based Access Control (RBAC)**, **Customer Advance Slot Bookings**, **Live Admin Monitoring**, and a **Pure Python Data Structures & Algorithms Core**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mavkarprathmesh-cyber/Smart-Parking-Management-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mavkarprathmesh-cyber/Smart-Parking-Management-System/issues"
+  },
+  "homepage": "https://github.com/mavkarprathmesh-cyber/Smart-Parking-Management-System#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4"
+  }
+}
