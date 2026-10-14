@@ -3,7 +3,45 @@
  */
 
 const API = {
-  baseUrl: '',
+  getBaseUrl() {
+    const saved = localStorage.getItem('smartpark_api_url');
+    if (saved && saved.trim()) return saved.trim().replace(/\/+$/, '');
+    
+    // Auto-detect native Capacitor or local wrapper environment
+    const isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+    const isLocalScheme = window.location.protocol === 'file:' || window.location.protocol === 'capacitor:';
+    
+    if (isCapacitor || isLocalScheme) {
+      return 'http://10.0.2.2:8000';
+    }
+    return '';
+  },
+
+  setBaseUrl(url) {
+    if (!url || !url.trim()) {
+      localStorage.removeItem('smartpark_api_url');
+    } else {
+      localStorage.setItem('smartpark_api_url', url.trim().replace(/\/+$/, ''));
+    }
+  },
+
+  async pingServer(targetUrl) {
+    const base = (targetUrl !== undefined ? targetUrl : this.getBaseUrl()).trim().replace(/\/+$/, '');
+    const url = `${base}/api/dashboard`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    try {
+      const resp = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
+      if (resp.ok) {
+        return { success: true, message: `Connected successfully (HTTP ${resp.status})` };
+      }
+      return { success: false, message: `Server replied with HTTP ${resp.status}` };
+    } catch (err) {
+      clearTimeout(timer);
+      return { success: false, message: `Connection failed: ${err.name === 'AbortError' ? 'Connection timed out (4s)' : err.message}` };
+    }
+  },
 
   getToken() {
     return localStorage.getItem('smartpark_token') || sessionStorage.getItem('smartpark_token') || '';
@@ -47,8 +85,9 @@ const API = {
       defaultHeaders['Authorization'] = `Bearer ${token}`;
     }
 
+    const base = this.getBaseUrl();
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(`${base}${endpoint}`, {
         ...options,
         headers: {
           ...defaultHeaders,
@@ -70,6 +109,12 @@ const API = {
       return data;
     } catch (err) {
       console.error(`API Error on [${endpoint}]:`, err);
+      if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError'))) {
+        const currentBase = base || 'current origin';
+        if (window.UI && typeof window.UI.showToast === 'function') {
+          window.UI.showToast(`Cannot reach backend at ${currentBase}. Tap server settings to configure.`, 'error');
+        }
+      }
       throw err;
     }
   },

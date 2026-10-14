@@ -76,3 +76,47 @@ To run automated verification tests:
 python test_system.py
 python verify_api.py
 ```
+
+---
+
+## 📱 Android Mobile Application
+
+The Smart Parking Management System is packaged as a native Android application using **Capacitor**, preserving the entire UI, interactive 3D navigation, viva demo accounts, and pure Python DSA backend connectivity.
+
+### 📦 APK Location
+* **Debug APK**: [`android/app/build/outputs/apk/debug/app-debug.apk`](file:///c:/Users/Lenovo/Downloads/SUMIT'S%20DOCUMENT/DSA%20PROJECT/android/app/build/outputs/apk/debug/app-debug.apk) (~4.2 MB)
+* **Package ID**: `com.smartparking.management`
+* **App Name**: `Smart Parking Management System`
+* **Min SDK**: 24 (Android 7.0+) | **Target SDK**: 36 (Android 16+)
+
+### 📲 Transfer & Install on Android Phone
+1. Transfer `app-debug.apk` to your phone via USB cable, Google Drive, WhatsApp, or local file sharing.
+2. On your Android phone, open the APK file in **Files** / **Downloads**.
+3. If prompted, toggle **Allow installation from unknown sources / this source**.
+4. Tap **Install** and open **Smart Parking Management System**.
+
+### 🌐 Backend & Server Configuration
+When the app launches on an Android phone:
+1. Tap the **Network / Server icon** in the top-right corner of the Login screen or Top Header.
+2. Set your server endpoint:
+   * **Wi-Fi / Local Network**: Enter `http://<YOUR_LAPTOP_IP>:8000` (e.g., `http://192.168.1.105:8000`). Make sure your laptop and phone are on the same Wi-Fi network and start the server with `python -m uvicorn main:app --host 0.0.0.0 --port 8000`.
+   * **Android Emulator**: Tap **Emulator (10.0.2.2)** preset (`http://10.0.2.2:8000`).
+   * **Cloud / Production**: Enter your deployed Vercel/Render API URL (e.g. `https://your-app.vercel.app`).
+3. Tap **Ping Test** to verify connection, then tap **Save & Connect**.
+
+### 🔨 Rebuilding the Android APK
+To rebuild the Android APK after making frontend or native changes:
+```powershell
+# 1. Sync web assets into Android native project
+npx.cmd cap sync android
+
+# 2. Build the Debug APK using Gradle
+cd android
+.\gradlew.bat assembleDebug
+```
+*Generated APK output*: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+### 🔑 Debug APK vs Signed Release APK
+* **Debug APK (`app-debug.apk`)**: Automatically signed with Android's default debug keystore. Perfect for viva testing, direct installation via USB/sideloading, and development without needing a personal signing certificate.
+* **Release APK / AAB**: Requires generating a private keystore (`keytool`), configuring `signingConfigs` in `build.gradle`, running `gradlew assembleRelease`, and alignment/zipalign for Google Play Store publication.
+
